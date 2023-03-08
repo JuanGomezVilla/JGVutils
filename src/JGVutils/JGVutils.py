@@ -3,10 +3,12 @@ import sqlite3, json, os
 
 # Class for useful methods
 class Utils:
-    # Method to use input in a more orderly way
-    # A message, the type of result, return by default and an error message can be provided
     @staticmethod
     def input(message="", type=str, default=None, error_message=None):
+        '''
+        Method to use input in a more orderly way
+        A message, the type of result, return by default and an error message can be provided
+        '''
         # Try to convert
         try:
             # Display a message on the screen for the user to type
