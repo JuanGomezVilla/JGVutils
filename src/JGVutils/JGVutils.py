@@ -1,7 +1,7 @@
 import sqlite3  # Import the SQLite3 module for database access.
 import json  # Import the JSON module for working with JSON data.
 import os  # Import the OS module for working with files and directories.
-import mysql.connector  # Import the MySQL Connector module for working with MySQL databases.
+import pymysql # Script to establish database connections and execute SQL queries.
 
 class Utils:
     @staticmethod
@@ -158,7 +158,7 @@ class SQLiteConnection:
 
 class MySQLConnection:
     """
-    Class that represents a connection to a MySQL database.
+    A class for connecting to a MySQL database and executing queries.
 
     Attributes:
     - host (str): IP address or hostname where the database is located. Defaults to "localhost".
@@ -166,14 +166,10 @@ class MySQLConnection:
     - dbname (str): name of the database to connect to.
     - username (str): username to authenticate with the database.
     - password (str): password to authenticate with the database.
-
+    
     Methods:
     - is_database_connection(): Checks if a connection to the specified database can be established.
-    - execute_query(query, args=[], type_fetch="dict", commit=False): Executes an SQL query on the specified database.
-        - query (str): SQL query to execute.
-        - args (list): list of arguments for the SQL query. Defaults to an empty list.
-        - type_fetch (str): type of data to retrieve from the query. Can be "dict" (dictionary) or "tuple". Defaults to "dict".
-        - commit (bool): if True, commits the transaction after executing the query. Defaults to False.
+    - execute_query(query, args=[], type_fetch="dict"): Executes a SQL query and returns the result.
 
     """
     def __init__(self, host="localhost", port=3306, dbname="dbname", username="root", password=""):
@@ -186,64 +182,81 @@ class MySQLConnection:
         - dbname (str): name of the database to connect to.
         - username (str): username to authenticate with the database.
         - password (str): password to authenticate with the database.
-
         """
+        # Set the class attributes based on the arguments passed to the constructor.
         self.host = host
         self.port = port
         self.dbname = dbname
         self.username = username
         self.password = password
-
+    
     def is_database_connection(self):
         """
         Checks if a connection to the specified database can be established.
 
         Returns:
         - True if a connection can be established, False otherwise.
-
         """
+        # Set variables for the connection and cursor to None.
+        connection = cursor = None
         try:
-            # Establishes a connection to the database using the specified credentials
-            mysql.connector.connect(host=self.host, port=self.port, user=self.username, passwd=self.password, database=self.dbname)
-            return True
+            # Try to establish a connection to the database.
+            connection = pymysql.connect(
+                host=self.host,
+                user=self.username,
+                password=self.password,
+                db=self.dbname
+            )
+            # Try to get a cursor for the connection.
+            cursor = connection.cursor()
         except:
-            pass
-        # Return False on error
-        return False
+            # If there was an error, return False.
+            return False
+        # Close the cursor and connection.
+        cursor.close()
+        connection.close()
+        # If we made it this far, return True.
+        return True
 
-    def execute_query(self, query, args=[], type_fetch="dict", commit=False):
+    def execute_query(self, query, args=[], type_fetch="dict"):
         """
-        Executes an SQL query on the specified database.
+        Executes a SQL query against the specified database.
 
         Parameters:
-        - query (str): SQL query to execute.
-        - args (list): list of arguments for the SQL query. Defaults to an empty list.
-        - type_fetch (str): type of data to retrieve from the query. Can be "dict" (dictionary) or "tuple". Defaults to "dict".
-        - commit (bool): if True, commits the transaction after executing the query. Defaults to False.
+        - query (str): the SQL query to execute.
+        - args (list): a list of parameters to pass to the query. Defaults to an empty list.
+        - type_fetch (str): the type of result set to return. Defaults to "dict".
 
         Returns:
-        - If type_fetch is "dict", returns a list of dictionaries representing the query results.
-        - If type_fetch is "tuple", returns a list of tuples representing the query results.
-
+        - A list of rows returned by the query, or None if an error occurred.
         """
         try:
-            # Establishes a connection to the database using the specified credentials
-            connection = mysql.connector.connect(host=self.host, port=self.port, user=self.username, passwd=self.password, database=self.dbname)
-            # Creates a cursor object to execute the SQL query on the database
-            cursor = connection.cursor(dictionary = type_fetch == "dict")
-            # Executes the SQL query using the cursor object
-            cursor.execute(query)
-            # Retrieves all rows of the query result
+            # Try to establish a connection to the database.
+            connection = pymysql.connect(
+                host=self.host,
+                user=self.username,
+                password=self.password,
+                db=self.dbname,
+                charset="utf8",
+                # Set the cursor class based on the type_fetch parameter.
+                cursorclass=pymysql.cursors.DictCursor if type_fetch == "dict" else pymysql.cursors.Cursor,
+                autocommit=True,
+            )
+            # Try to get a cursor for the connection.
+            cursor = connection.cursor()
+            # Execute the query with the given arguments.
+            cursor.execute(query, args)
+            # Get all the rows returned by the query.
             rows = cursor.fetchall()
-            # Closes the cursor and connection to the database
+            # Close the cursor and connection.
             cursor.close()
             connection.close()
-            # If the desired fetch type is not a dictionary, converts the result to a list of tuples
+            # If type_fetch is not "dict", return a list of values from the rows.
             if type_fetch != "dict":
                 rows = [row[0] if len(row) == 1 else row for row in rows]  
-            # Returns the result of the query
+            # Return the rows.
             return rows
         except:
-            # If an error occurs, returns None
+            # If there was an error, return None.
             pass
         return None

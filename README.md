@@ -1,6 +1,6 @@
 # JGVutils
 
-![JGVutils](https://img.shields.io/badge/version-v1.0.3.0-blue.svg)
+![JGVutils](https://img.shields.io/badge/version-v1.0.4.0-blue.svg)
 
 Useful utils to use in Python with standard libraries
 

@@ -7,6 +7,7 @@ conexion = MySQLConnection(host="localhost", dbname="wordle")
 if conexion.is_database_connection():
     # Realizar una query sencilla
     filas = conexion.execute_query("SELECT * FROM palabras")
+    # Imprimir los datos
     print(Utils.return_json(filas))
 else:
     print("No existe conexión")
