@@ -5,6 +5,12 @@ import pymysql # Script to establish database connections and execute SQL querie
 
 class Utils:
     @staticmethod
+    def get_value_from_dict(dictionary, key, default=None):
+        if key in dictionary:
+            return dictionary[key]
+        return default
+
+    @staticmethod
     def input(message="", type=str, default=None, error_message=None):
         """
         A static method that prompts the user for input, converts the input to the specified data type, and returns the input.
@@ -27,7 +33,7 @@ class Utils:
         return default
 
     @staticmethod
-    def return_json(array, format=True, indent=4, sort_keys=False):
+    def format_json(array, format=True, indent=4, sort_keys=False):
         """
         A static method that returns a JSON representation of a Python object.
         
